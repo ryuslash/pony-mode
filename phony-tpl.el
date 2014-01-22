@@ -1,5 +1,5 @@
 ;;
-;; Pony-tpl-minor-mode
+;; Phony-tpl-minor-mode
 ;;
 ;; Commentary:
 ;;
@@ -10,12 +10,11 @@
 ;;; Code:
 
 (require 'sgml-mode)
-(require 'pony-mode)
 
-(defgroup pony-tpl nil
+(defgroup phony-tpl nil
   "Djangification for Templates in Emacs"
   :group 'pony
-  :prefix "pony-tpl-")
+  :prefix "phony-tpl-")
 
 ;;
 ;; Indentation of Django tags
@@ -29,17 +28,17 @@
 ;; make sure that TAB doesn't affect (point)
 ;;
 
-(defvar pony-nonindenting-tags
+(defvar phony-nonindenting-tags
   '("break" "continue" "do" "extends" "from" "import" "include" "set")
   "List of tags that do not imply indentation (or require an end tag).")
 
-(defvar pony-indenting-tags
+(defvar phony-indenting-tags
   '("autoescape" "block" "call" "elif" "else" "filter" "for" "if" "macro"
     "pluralize" "trans" "with")
   "List of template tags that imply indentation.")
 
-(defvar pony-indenting-tags-regexp
-  (regexp-opt pony-indenting-tags)
+(defvar phony-indenting-tags-regexp
+  (regexp-opt phony-indenting-tags)
   "Regular expression matching a template tag that implies indentation.")
 
 (defun sgml-indent-line-num ()
@@ -56,23 +55,23 @@
           (save-excursion indent-col)
         indent-col))))
 
-(defun pony-calculate-indent-backward (default)
+(defun phony-calculate-indent-backward (default)
   "Return indent column based on previous lines"
   (let ((indent-width sgml-basic-offset))
     (forward-line -1)
     (if (looking-at "^[ \t]*{%-? *end") ; Don't indent after end
         (current-indentation)
-      (if (looking-at (concat "^[ \t]*{%-? *.*?{%-? *end" pony-indenting-tags-regexp "\\>"))
+      (if (looking-at (concat "^[ \t]*{%-? *.*?{%-? *end" phony-indenting-tags-regexp "\\>"))
           (current-indentation)
-        (if (looking-at (concat "^[ \t]*{%-? *" pony-indenting-tags-regexp "\\>")) ; Check start tag
+        (if (looking-at (concat "^[ \t]*{%-? *" phony-indenting-tags-regexp "\\>")) ; Check start tag
             (+ (current-indentation) indent-width)
           (if (looking-at "^[ \t]*<") ; Assume sgml block trust sgml
               default
             (if (bobp)
                 0
-              (pony-calculate-indent-backward default))))))))
+              (phony-calculate-indent-backward default))))))))
 
-(defun pony-calculate-indent ()
+(defun phony-calculate-indent ()
   "Return indent column"
   (save-excursion
     (beginning-of-line)
@@ -84,19 +83,19 @@
               (forward-line -1)
               (if
                   (and
-                   (looking-at (concat "^[ \t]*{%-? *" pony-indenting-tags-regexp "\\>"))
-                   (not (looking-at (concat "^[ \t]*{%-? *.*?{% *end" pony-indenting-tags-regexp "\\>"))))
+                   (looking-at (concat "^[ \t]*{%-? *" phony-indenting-tags-regexp "\\>"))
+                   (not (looking-at (concat "^[ \t]*{%-? *.*?{% *end" phony-indenting-tags-regexp "\\>"))))
                   (current-indentation)
                 (- (current-indentation) indent-width)))
           (if (looking-at "^[ \t]*</") ; Assume sgml end block trust sgml
               default
-            (pony-calculate-indent-backward default)))))))
+            (phony-calculate-indent-backward default)))))))
 
-(defun pony-indent ()
+(defun phony-indent ()
   "Indent current line as Jinja code"
   (interactive)
   (let ((pos (- (point-max) (point)))
-        (indent (pony-calculate-indent)))
+        (indent (phony-calculate-indent)))
     (if (< indent 0)
         (setq indent 0))
     (indent-line-to indent)
@@ -106,37 +105,36 @@
      (if (> moved-pos (point))
          (goto-char moved-pos)))))
 
-(defvar pony-tpl-mode-hook nil)
+(defvar phony-tpl-mode-hook nil)
 
-(defconst pony-tpl-font-lock-keywords
+(defconst phony-tpl-font-lock-keywords
   (append
    sgml-font-lock-keywords
    (list
     '("{%.*\\(\\bor\\b\\).*%}" . (1 font-lock-builtin-face))
     ;'("{% ?comment ?%}\\(\n?.*?\\)+?{% ?endcomment ?%}" . font-lock-comment-face)
     '("{#.*#}" . font-lock-comment-face)
-    (cons (concat "{% *\\(\\(?:end\\)?" (regexp-opt pony-indenting-tags) "\\|" (regexp-opt pony-nonindenting-tags) "\\>\\).*?%}") 1)
+    (cons (concat "{% *\\(\\(?:end\\)?" (regexp-opt phony-indenting-tags) "\\|" (regexp-opt phony-nonindenting-tags) "\\>\\).*?%}") 1)
     '("{{ ?\\(.*?\\) ?}}" . (1 font-lock-variable-name-face))
     '("{%\\|\\%}\\|{{\\|}}" . font-lock-builtin-face)
     ))
-  "Highlighting for pony-tpl-mode")
+  "Highlighting for phony-tpl-mode")
 
-(define-minor-mode pony-tpl-minor-mode
-  "Pony-templatin-riffic"
+(define-minor-mode phony-tpl-minor-mode
+  "Phony-templatin-riffic"
   :initial nil
-  :lighter " PonyTpl"
-  :keymap pony-minor-mode-map)
+  :lighter " PhonyTpl")
 
-(defun pony-tpl-mode()
-  "Minor mode for editing pony templates"
+(defun phony-tpl-mode()
+  "Minor mode for editing phony templates"
   (interactive)
-  (pony-tpl-minor-mode t)
-  (run-hooks 'pony-tpl-mode-hook)
+  (phony-tpl-minor-mode t)
+  (run-hooks 'phony-tpl-mode-hook)
   (set (make-local-variable 'font-lock-defaults)
-       '(pony-tpl-font-lock-keywords))
+       '(phony-tpl-font-lock-keywords))
   (if (> emacs-major-version 23)
       (font-lock-refresh-defaults))
-  (set (make-local-variable 'indent-line-function) 'pony-indent)
-   (pony-load-snippets))
+  (set (make-local-variable 'indent-line-function) 'phony-indent)
+   (phony-load-snippets))
 
-;; pony-tpl-minor-mode ends
+;; phony-tpl-minor-mode ends
