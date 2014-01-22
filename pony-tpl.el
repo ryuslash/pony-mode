@@ -27,13 +27,12 @@
 ;;
 
 (defvar pony-nonindenting-tags
-  '("cache" "csrf_token" "cycle" "debug" "extends" "firstof" "include" "load" "now"
-    "regroup" "ssi" "templatetag" "trans" "url" "widthratio")
+  '("break" "continue" "do" "extends" "from" "import" "include" "set")
   "List of tags that do not imply indentation (or require an end tag).")
 
 (defvar pony-indenting-tags
-  '("autoescape" "block" "blocktrans" "comment" "elif" "else" "empty"
-    "filter" "for" "if" "ifchanged" "ifequal" "ifnotequal" "spaceless" "with")
+  '("autoescape" "block" "call" "elif" "else" "filter" "for" "if" "macro"
+    "pluralize" "trans" "with")
   "List of template tags that imply indentation.")
 
 (defvar pony-indenting-tags-regexp
@@ -77,7 +76,7 @@
     (if (bobp)  ; Check begining of buffer
         0
       (let ((indent-width sgml-basic-offset) (default (sgml-indent-line-num)))
-        (if (looking-at "^[ \t]*{%-? *e\\(nd\\|lse\\|lif\\)") ; Check close tag
+        (if (looking-at "^[ \t]*{%-? *\\(?:e\\(nd\\|lse\\|lif\\)\\|pluralize\\)") ; Check close tag
             (progn
               (forward-line -1)
               (if
