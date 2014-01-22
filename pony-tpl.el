@@ -7,7 +7,10 @@
 ;; shortcuts for editing django template (html) files.
 ;;
 
-;; pony-tpl-minor-mode begins
+;;; Code:
+
+(require 'sgml-mode)
+(require 'pony-mode)
 
 (defgroup pony-tpl nil
   "Djangification for Templates in Emacs"
