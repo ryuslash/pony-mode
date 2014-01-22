@@ -1,11 +1,40 @@
+;;; phony-tpl.el --- A fork of pony-tpl-mode for jinja2
+
+;; Copyright (C) 2011  David Miller <david@deadpansincerity.com>
+;; Copyright (C) 2014  Tom Willemse
+
+;; Author: Tom Willemse <tom@ryuslash.org>
+;; Keywords: python jinja2
+;; Version: 0.1.0
+
+;; This program is free software; you can redistribute it and/or
+;; modify it under the terms of the GNU General Public License
+;; as published by the Free Software Foundation; either version 2
+;; of the License, or (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program; if not, write to the Free Software
+;; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+;; 02111-1307, USA.
+
+;;; Commentary:
+
+;; A fork of pony-tpl-mode from pony-mode
+;; (http://www.deadpansincerity.com/docs/pony/) which brings (back)
+;; Jinja2 template tags.
+
+;;; Indentation of Jinja2 tags
+
+;; This implementation "borrows" (read: Steals Liberally) from Florian
+;; Mounier's Jinja2 Mode https://github.com/paradoxxxzero/jinja2-mode
 ;;
-;; Phony-tpl-minor-mode
-;;
-;; Commentary:
-;;
-;; This minor mode provides syntax highlighting and some useful default
-;; shortcuts for editing django template (html) files.
-;;
+;; All we really do here is redefine the relevant functions, alter the
+;; keywords and make sure that TAB doesn't affect (point)
 
 ;;; Code:
 
@@ -15,18 +44,6 @@
   "Djangification for Templates in Emacs"
   :group 'pony
   :prefix "phony-tpl-")
-
-;;
-;; Indentation of Django tags
-;;
-;; Commentary:
-;;
-;; This implementation "borrows" (read: Steals Liberally) from Florian Mounier's Jinja2 Mode
-;; https://github.com/paradoxxxzero/jinja2-mode
-;;
-;; All we really do here is redefine the relevant functions, alter the keywords and
-;; make sure that TAB doesn't affect (point)
-;;
 
 (defvar phony-nonindenting-tags
   '("break" "continue" "do" "extends" "from" "import" "include" "set")
@@ -56,7 +73,9 @@
         indent-col))))
 
 (defun phony-calculate-indent-backward (default)
-  "Return indent column based on previous lines"
+  "Return indent column based on previous lines.
+
+If nothing important is found, fall back to DEFAULT."
   (let ((indent-width sgml-basic-offset))
     (forward-line -1)
     (if (looking-at "^[ \t]*{%-? *end") ; Don't indent after end
@@ -72,7 +91,7 @@
               (phony-calculate-indent-backward default))))))))
 
 (defun phony-calculate-indent ()
-  "Return indent column"
+  "Return indent column."
   (save-excursion
     (beginning-of-line)
     (if (bobp)  ; Check begining of buffer
@@ -92,7 +111,7 @@
             (phony-calculate-indent-backward default)))))))
 
 (defun phony-indent ()
-  "Indent current line as Jinja code"
+  "Indent current line as Jinja2 code."
   (interactive)
   (let ((pos (- (point-max) (point)))
         (indent (phony-calculate-indent)))
@@ -118,13 +137,14 @@
     '("{{ ?\\(.*?\\) ?}}" . (1 font-lock-variable-name-face))
     '("{%\\|\\%}\\|{{\\|}}" . font-lock-builtin-face)
     ))
-  "Highlighting for phony-tpl-mode")
+  "Highlighting for phony-tpl-mode.")
 
 (define-minor-mode phony-tpl-minor-mode
   "Phony-templatin-riffic"
   :initial nil
   :lighter " PhonyTpl")
 
+;;;###autoload
 (defun phony-tpl-mode()
   "Minor mode for editing phony templates"
   (interactive)
@@ -134,7 +154,7 @@
        '(phony-tpl-font-lock-keywords))
   (if (> emacs-major-version 23)
       (font-lock-refresh-defaults))
-  (set (make-local-variable 'indent-line-function) 'phony-indent)
-   (phony-load-snippets))
+  (set (make-local-variable 'indent-line-function) 'phony-indent))
 
-;; phony-tpl-minor-mode ends
+(provide 'phony-tpl)
+;;; phony-tpl.el ends here
